@@ -22,7 +22,7 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
   if (window.blockArcAdsPrebid) {
     return;
   }
-  
+
   if (!window.enableMagnite) {
     pbjs.requestBids({
       timeout,
