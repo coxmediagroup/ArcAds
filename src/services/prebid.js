@@ -17,31 +17,50 @@ export function queuePrebidCommand(fn) {
  * @param {function} prerender - An optional function that will run before the advertisement renders.
  * @param {function} cb - An optional callback function that should fire whenever the bidding has concluded.
  **/
+
 export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = null) {
   pbjs.addAdUnits(info); //eslint-disable-line no-undef
   if (window.blockArcAdsPrebid) {
     return;
   }
-  
-  if (!window.enableMagnite) {
+
+  const magniteAds = ['HP01', 'HP02', 'RP01', 'RP02', 'RP04', 'PG01', 'PG02', 'PG03', 'RPAA', 'VP01', 'VP02'];
+
+  if (window.enableMagnite) {
+    if (magniteAds.includes(codes[0])) {
+      pbjs.rp.requestBids({
+        gptSlotObjects: [ad],
+        callback: (result) => {
+          console.log('Demand Manager Bid Back Handler', result);
+          if (cb) {
+            cb();
+          } else {
+            refreshSlot({ ad, info, prerender });
+          }
+        },
+      });
+    } else {
+      pbjs.requestBids({
+        timeout,
+        adUnitCodes: codes,
+        bidsBackHandler: (result) => {
+          console.log('Bid Back Handler', result);
+          pbjs.setTargetingForGPTAsync(codes);
+          if (cb) {
+            cb();
+          } else {
+            refreshSlot({ ad, info, prerender });
+          }
+        },
+      });
+    }
+  } else {
     pbjs.requestBids({
       timeout,
       adUnitCodes: codes,
       bidsBackHandler: (result) => {
         console.log('Bid Back Handler', result);
         pbjs.setTargetingForGPTAsync(codes);
-        if (cb) {
-          cb();
-        } else {
-          refreshSlot({ ad, info, prerender });
-        }
-      },
-    });
-  } else {
-    pbjs.rp.requestBids({
-      gptSlotObjects: ad,
-      callback: (result) => {
-        console.log('Demand Manager Bid Back Handler', result);
         if (cb) {
           cb();
         } else {

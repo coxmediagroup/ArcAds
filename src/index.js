@@ -66,7 +66,7 @@ export class ArcAds {
         Object.assign(params, { targeting: positionParam });
       }
 
-      const prebidEnabled = bidding.prebid &&
+      const prebidEnabled = !window.enableMagnite && bidding.prebid &&
         ((bidding.prebid.enabled && bidding.prebid.bids) ||
         (typeof bidding.prebid.enabled === 'undefined' && bidding.prebid.bids));
 

@@ -21,14 +21,14 @@ export function initializeBiddingServices({
   window.arcBiddingReady = false;
 
   const enablePrebid = new Promise((resolve) => {
-    if (prebid && prebid.enabled) {
+    if (!window.enableMagnite && prebid && prebid.enabled) {
       if (typeof pbjs === 'undefined') {
         const pbjs = pbjs || {};
         pbjs.que = pbjs.que || [];
       }
       resolve('Prebid has been initialized');
     } else {
-      sendLog('initializeBiddingServices()', 'Prebid is not enabled on this wrapper.', null);
+      sendLog('initializeBiddingServices()', 'Arc Prebid is not enabled on this wrapper.', null);
       resolve('Prebid is not enabled on the wrapper...');
     }
   });
