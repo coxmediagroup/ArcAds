@@ -22,19 +22,34 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
   if (window.blockArcAdsPrebid) {
     return;
   }
-  pbjs.requestBids({
-    timeout,
-    adUnitCodes: codes,
-    bidsBackHandler: (result) => {
-      console.log('Bid Back Handler', result);
-      pbjs.setTargetingForGPTAsync(codes);
-      if (cb) {
-        cb();
-      } else {
-        refreshSlot({ ad, info, prerender });
-      }
-    },
-  });
+  
+  if (!window.enableMagnite) {
+    pbjs.requestBids({
+      timeout,
+      adUnitCodes: codes,
+      bidsBackHandler: (result) => {
+        console.log('Bid Back Handler', result);
+        pbjs.setTargetingForGPTAsync(codes);
+        if (cb) {
+          cb();
+        } else {
+          refreshSlot({ ad, info, prerender });
+        }
+      },
+    });
+  } else {
+    pbjs.rp.requestBids({
+      gptSlotObjects: ad,
+      callback: (result) => {
+        console.log('Demand Manager Bid Back Handler', result);
+        if (cb) {
+          cb();
+        } else {
+          refreshSlot({ ad, info, prerender });
+        }
+      },
+    });
+  }
 }
 
 export function fetchPrebidBids(ad, code, timeout, info, prerender, cb = null) {
