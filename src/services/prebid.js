@@ -39,14 +39,10 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
     });
   } else {
     pbjs.rp.requestBids({
-      gptSlotObjects: ad,
+      gptSlotObjects: [ad],
       callback: (result) => {
         console.log('Demand Manager Bid Back Handler', result);
-        if (cb) {
-          cb();
-        } else {
-          refreshSlot({ ad, info, prerender });
-        }
+        refreshSlot({ ad, info, prerender });
       },
     });
   }
