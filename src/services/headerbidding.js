@@ -10,6 +10,7 @@ import { sendLog } from '../util/log';
 * @param {object} obj.amazon - An object containing configuration data for Amazon A9 and TAM.
 **/
 export function initializeBiddingServices({
+  prebid = false,
   amazon = false
 }) {
   if (window.arcBiddingReady) {
@@ -19,18 +20,18 @@ export function initializeBiddingServices({
 
   window.arcBiddingReady = false;
 
-  // const enablePrebid = new Promise((resolve) => {
-  //   if (prebid && prebid.enabled) {
-  //     if (typeof pbjs === 'undefined') {
-  //       const pbjs = pbjs || {};
-  //       pbjs.que = pbjs.que || [];
-  //     }
-  //     resolve('Prebid has been initialized');
-  //   } else {
-  //     sendLog('initializeBiddingServices()', 'Prebid is not enabled on this wrapper.', null);
-  //     resolve('Prebid is not enabled on the wrapper...');
-  //   }
-  // });
+  const enablePrebid = new Promise((resolve) => {
+    if (prebid && prebid.enabled && !window.enableMagnite) {
+      if (typeof pbjs === 'undefined') {
+        const pbjs = pbjs || {};
+        pbjs.que = pbjs.que || [];
+      }
+      resolve('Prebid has been initialized');
+    } else {
+      sendLog('initializeBiddingServices()', 'Arc Prebid is not enabled on this wrapper.', null);
+      resolve('Prebid is not enabled on the wrapper...');
+    }
+  });
 
   const enableAmazon = new Promise((resolve) => {
     if (amazon && amazon.enabled && window.apstag) {
@@ -57,7 +58,7 @@ export function initializeBiddingServices({
   });
 
   // Waits for all header bidding services to be initialized before telling the service it's ready to retrieve bids.
-  Promise.all([enableAmazon])
+  Promise.all([enablePrebid, enableAmazon])
     .then(() => {
       window.arcBiddingReady = true;
     });

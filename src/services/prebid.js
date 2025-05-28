@@ -22,8 +22,8 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
   if (window.blockArcAdsPrebid) {
     return;
   }
-
-  if (!window.enableMagnite) {
+  const hasMagniteAd = !(['PX01', 'PXO2', 'WP01'].includes(codes));
+  if (!window.enableMagnite && !hasMagniteAd) {
     pbjs.requestBids({
       timeout,
       adUnitCodes: codes,

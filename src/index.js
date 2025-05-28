@@ -2,7 +2,7 @@ import { MobileDetection } from './util/mobile';
 import { sendLog } from './util/log';
 import { fetchBids, initializeBiddingServices } from './services/headerbidding';
 import { initializeGPT, queueGoogletagCommand, refreshSlot, dfpSettings, setTargeting, determineSlotName } from './services/gpt';
-// import { queuePrebidCommand, addUnit } from './services/prebid';
+import { queuePrebidCommand, addUnit } from './services/prebid';
 import { prepareSizeMaps, setResizeListener } from './services/sizemapping';
 
 function getArrayDepth(array) {
@@ -40,7 +40,7 @@ export class ArcAds {
   * @param {object} params - An object containing all of the advertisement configuration settings such as slot name, id, and position.
   **/
   registerAd(params) {
-    const { slotName, dimensions, adType = false, targeting = {}, display = 'all', } = params;
+    const { id, slotName, dimensions, adType = false, targeting = {}, display = 'all', bidding = false, iframeBidders = ['openx'], others = {} } = params;
     const flatDimensions = [];
     let processDisplayAd = false;
     const dimensionsDepth = getArrayDepth(dimensions);
@@ -66,29 +66,29 @@ export class ArcAds {
         Object.assign(params, { targeting: positionParam });
       }
 
-      // const prebidEnabled = bidding.prebid &&
-      //   ((bidding.prebid.enabled && bidding.prebid.bids) ||
-      //   (typeof bidding.prebid.enabled === 'undefined' && bidding.prebid.bids));
+      const prebidEnabled = bidding.prebid &&
+        ((bidding.prebid.enabled && bidding.prebid.bids) ||
+        (typeof bidding.prebid.enabled === 'undefined' && bidding.prebid.bids));
 
       if ((isMobile.any() && display === 'mobile') || (!isMobile.any() && display === 'desktop') || (display === 'all')) {
         // Registers the advertisement with Prebid.js if enabled on both the unit and wrapper.
-        // if (prebidEnabled && (this.wrapper.prebid && this.wrapper.prebid.enabled) && flatDimensions) {
-        //   if (pbjs && iframeBidders.length > 0) {
-        //     pbjs.setConfig({
-        //       userSync: {
-        //         iframeEnabled: true,
-        //         filterSettings: {
-        //           iframe: {
-        //             bidders: iframeBidders,
-        //             filter: 'include'
-        //           }
-        //         }
-        //       }
-        //     });
-        //   }
-        //   const code = this.wrapper.prebid.useSlotForAdUnit ? determineSlotName(this.dfpId, slotName) : id;
-        //   queuePrebidCommand.bind(this, addUnit(code, flatDimensions, bidding.prebid.bids, this.wrapper.prebid, others));
-        // }
+        if (prebidEnabled && (this.wrapper.prebid && this.wrapper.prebid.enabled) && flatDimensions) {
+          if (pbjs && iframeBidders.length > 0) {
+            pbjs.setConfig({
+              userSync: {
+                iframeEnabled: true,
+                filterSettings: {
+                  iframe: {
+                    bidders: iframeBidders,
+                    filter: 'include'
+                  }
+                }
+              }
+            });
+          }
+          const code = this.wrapper.prebid.useSlotForAdUnit ? determineSlotName(this.dfpId, slotName) : id;
+          queuePrebidCommand.bind(this, addUnit(code, flatDimensions, bidding.prebid.bids, this.wrapper.prebid, others));
+        }
 
         processDisplayAd = this.displayAd.bind(this, params);
         if (processDisplayAd) {
