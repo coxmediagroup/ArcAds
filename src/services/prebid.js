@@ -17,12 +17,14 @@ export function queuePrebidCommand(fn) {
  * @param {function} prerender - An optional function that will run before the advertisement renders.
  * @param {function} cb - An optional callback function that should fire whenever the bidding has concluded.
  **/
+const magniteAds = ['HP01', 'HP02', 'RP01', 'RP02', 'RP04', 'PG01', 'PG02', 'PG03', 'RRAA', 'VP01', 'VP02', 'MP01'];
+
 export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = null) {
   pbjs.addAdUnits(info); //eslint-disable-line no-undef
   if (window.blockArcAdsPrebid) {
     return;
   }
-  if (!window.enableMagnite) {
+  if (!window.enableMagnite && !magniteAds.includes(codes)) {
     pbjs.requestBids({
       timeout,
       adUnitCodes: codes,
