@@ -40,8 +40,7 @@ export function initializeBiddingServices({
           // Initializes the Amazon APS tag script.
           window.apstag.init({
             pubID: amazon.id,
-            adServer: 'googletag',
-            deals: !!amazon.deals,
+            adServer: 'googletag'
           });
 
           resolve('Amazon scripts have been added onto the page!');
