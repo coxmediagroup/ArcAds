@@ -21,7 +21,7 @@ export function initializeBiddingServices({
   window.arcBiddingReady = false;
 
   const enablePrebid = new Promise((resolve) => {
-    if (prebid && prebid.enabled && !window.enableMagnite) {
+    if (prebid && prebid.enabled) {
       if (typeof pbjs === 'undefined') {
         const pbjs = pbjs || {};
         pbjs.que = pbjs.que || [];
