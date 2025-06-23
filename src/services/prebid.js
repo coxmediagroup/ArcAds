@@ -26,7 +26,7 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
 
   const magniteAds = ['HP01', 'HP02', 'RP01', 'RP02', 'RP04', 'PG01', 'PG02', 'PG03', 'RPAA', 'VP01', 'VP02'];
 
-  if (magniteAds.includes(codes)) {
+  if (magniteAds.includes(codes[0])) {
     console.log('yo');
   } else {
     pbjs.requestBids({
