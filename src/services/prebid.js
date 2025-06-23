@@ -17,13 +17,11 @@ export function queuePrebidCommand(fn) {
  * @param {function} prerender - An optional function that will run before the advertisement renders.
  * @param {function} cb - An optional callback function that should fire whenever the bidding has concluded.
  **/
-
 export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = null) {
   pbjs.addAdUnits(info); //eslint-disable-line no-undef
   if (window.blockArcAdsPrebid) {
     return;
   }
-
   pbjs.requestBids({
     timeout,
     adUnitCodes: codes,
