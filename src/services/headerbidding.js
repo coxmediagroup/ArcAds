@@ -9,19 +9,19 @@ import { sendLog } from '../util/log';
 * @param {object} obj.prebid - An object containing configuration data for Prebid.js.
 * @param {object} obj.amazon - An object containing configuration data for Amazon A9 and TAM.
 **/
-export function initializeBiddingServices(wrapper) {
+export function initializeBiddingServices({
+  prebid = false,
+  amazon = false
+}) {
   if (window.arcBiddingReady) {
     sendLog('initializeBiddingServices()', 'Header bidding has been previously initialized', null);
     return;
   }
 
-  const prebid = wrapper.prebid || false;
-  const amazon = wrapper.amazon || false;
-
   window.arcBiddingReady = false;
 
   const enablePrebid = new Promise((resolve) => {
-    if (prebid && prebid.enabled && !window.enableMagnite) {
+    if (!window.enableMagnite && prebid && prebid.enabled) {
       if (typeof pbjs === 'undefined') {
         const pbjs = pbjs || {};
         pbjs.que = pbjs.que || [];
