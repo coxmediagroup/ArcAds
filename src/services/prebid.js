@@ -29,7 +29,7 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
   if (window.enableMagnite) {
     if (magniteAds.includes(codes[0])) {
       pbjs.rp.requestBids({
-        gptSlotObjects: ad,
+        gptSlotObjects: [ad],
         callback: (result) => {
           console.log('Demand Manager Bid Back Handler', result);
           if (cb) {
