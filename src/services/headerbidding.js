@@ -9,59 +9,59 @@ import { sendLog } from '../util/log';
 * @param {object} obj.prebid - An object containing configuration data for Prebid.js.
 * @param {object} obj.amazon - An object containing configuration data for Amazon A9 and TAM.
 **/
-export function initializeBiddingServices({
-  prebid = false,
-  amazon = false
-}) {
+export function initializeBiddingServices(wrapper) {
   if (window.arcBiddingReady) {
     sendLog('initializeBiddingServices()', 'Header bidding has been previously initialized', null);
     return;
   }
 
-  window.arcBiddingReady = false;
+  if (wrapper) {
+    const { prebid = false, amazon = false } = wrapper;
+    window.arcBiddingReady = false;
 
-  const enablePrebid = new Promise((resolve) => {
-    if (prebid && prebid.enabled && !window.enableMagnite) {
-      if (typeof pbjs === 'undefined') {
-        const pbjs = pbjs || {};
-        pbjs.que = pbjs.que || [];
-      }
-      resolve('Prebid has been initialized');
-    } else {
-      sendLog('initializeBiddingServices()', 'Arc Prebid is not enabled on this wrapper.', null);
-      resolve('Prebid is not enabled on the wrapper...');
-    }
-  });
-
-  const enableAmazon = new Promise((resolve) => {
-    if (amazon && amazon.enabled && window.apstag) {
-      if (amazon.id && amazon.id !== '') {
-        queueAmazonCommand(() => {
-          // Initializes the Amazon APS tag script.
-          window.apstag.init({
-            pubID: amazon.id,
-            adServer: 'googletag',
-            deals: !!amazon.deals,
-          });
-
-          resolve('Amazon scripts have been added onto the page!');
-        });
+    const enablePrebid = new Promise((resolve) => {
+      if (prebid && prebid.enabled && !window.enableMagnite) {
+        if (typeof pbjs === 'undefined') {
+          const pbjs = pbjs || {};
+          pbjs.que = pbjs.que || [];
+        }
+        resolve('Prebid has been initialized');
       } else {
-        console.warn(`ArcAds: Missing Amazon account id. 
+        sendLog('initializeBiddingServices()', 'Arc Prebid is not enabled on this wrapper.', null);
+        resolve('Prebid is not enabled on the wrapper...');
+      }
+    });
+
+    const enableAmazon = new Promise((resolve) => {
+      if (amazon && amazon.enabled && window.apstag) {
+        if (amazon.id && amazon.id !== '') {
+          queueAmazonCommand(() => {
+            // Initializes the Amazon APS tag script.
+            window.apstag.init({
+              pubID: amazon.id,
+              adServer: 'googletag',
+              deals: !!amazon.deals,
+            });
+
+            resolve('Amazon scripts have been added onto the page!');
+          });
+        } else {
+          console.warn(`ArcAds: Missing Amazon account id. 
           Documentation: https://github.com/washingtonpost/arcads#amazon-tama9`);
-        sendLog('initializeBiddingServices()', 'Amazon is not enabled on this wrapper.', null);
+          sendLog('initializeBiddingServices()', 'Amazon is not enabled on this wrapper.', null);
+          resolve('Amazon is not enabled on the wrapper...');
+        }
+      } else {
         resolve('Amazon is not enabled on the wrapper...');
       }
-    } else {
-      resolve('Amazon is not enabled on the wrapper...');
-    }
-  });
-
-  // Waits for all header bidding services to be initialized before telling the service it's ready to retrieve bids.
-  Promise.all([enablePrebid, enableAmazon])
-    .then(() => {
-      window.arcBiddingReady = true;
     });
+
+    // Waits for all header bidding services to be initialized before telling the service it's ready to retrieve bids.
+    Promise.all([enablePrebid, enableAmazon])
+      .then(() => {
+        window.arcBiddingReady = true;
+      });
+  }
 }
 
 /**
