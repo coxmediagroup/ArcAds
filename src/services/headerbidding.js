@@ -12,6 +12,18 @@ import { sendLog } from '../util/log';
 export function initializeBiddingServices(info = {}) {
   if (info) {
     const { prebid = false, amazon = false } = info;
+
+    if (typeof window !== 'undefined') {
+      window.pbjs = window.pbjs || {};
+      const { pbjs } = window;
+
+      pbjs.bidderSettings = {
+        standard: {
+          storageAllowed: true,
+        },
+      };
+    }
+
     if (window.arcBiddingReady) {
       sendLog('initializeBiddingServices()', 'Header bidding has been previously initialized', null);
       return;
