@@ -54,7 +54,7 @@ export function refreshSlot({
     } else {
       setTimeout(() => {
         runRefreshEvent();
-      }, 200);
+      }, 1000);
     }
   }
 }
