@@ -24,17 +24,15 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
     return;
   }
 
-  const sendAdServerRequest = failsafeHandler((slotsToRefresh) => {
-    googletag.pubads().refresh(slotsToRefresh);
-  }, [ad]);
+  // const sendAdServerRequest = failsafeHandler((slotsToRefresh) => {
+  //   googletag.pubads().refresh(slotsToRefresh);
+  // }, [ad]);
 
   if (window.enableMagnite) {
     pbjs.rp.requestBids({
       gptSlotObjects: [ad],
-      callback: sendAdServerRequest,
+      callback: () => {},
     });
-
-    setTimeout(sendAdServerRequest, 3500);
   } else {
     pbjs.requestBids({
       timeout,
@@ -51,14 +49,14 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
     });
   }
 
-  function failsafeHandler(callback, initialSlots) {
-    let adserverRequestSent = false;
-    return (bidsBackSlots) => {
-      if (adserverRequestSent) return;
-      adserverRequestSent = true;
-      callback(bidsBackSlots || initialSlots);
-    };
-  }
+  // function failsafeHandler(callback, initialSlots) {
+  //   let adserverRequestSent = false;
+  //   return (bidsBackSlots) => {
+  //     if (adserverRequestSent) return;
+  //     adserverRequestSent = true;
+  //     callback(bidsBackSlots || initialSlots);
+  //   };
+  // }
 }
 
 export function fetchPrebidBids(ad, code, timeout, info, prerender, cb = null) {
