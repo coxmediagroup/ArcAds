@@ -25,16 +25,18 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
   }
 
   if (window.enableMagnite) {
-    pbjs.rp.requestBids({
-      gptSlotObjects: [ad],
-      callback: (result) => {
-        console.log('Demand Manager Bid Back Handler', result);
-        if (cb) {
-          cb();
-        } else {
-          refreshSlot({ ad, info, prerender });
-        }
-      },
+    pbjs.que.push(function () {
+      pbjs.rp.requestBids({
+        gptSlotObjects: [ad],
+        callback: (result) => {
+          console.log('Demand Manager Bid Back Handler', result);
+          if (cb) {
+            cb();
+          } else {
+            refreshSlot({ ad, info, prerender });
+          }
+        },
+      });
     });
   } else {
     pbjs.requestBids({
