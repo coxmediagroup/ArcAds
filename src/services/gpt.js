@@ -30,7 +30,6 @@ export function refreshSlot({
   info = {}
 }) {
   new Promise((resolve) => {
-    runRefreshEvent();
     if (prerender) {
       try {
         prerender(info).then(() => {
