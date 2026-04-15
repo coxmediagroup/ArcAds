@@ -137,6 +137,6 @@ export function fetchBids({
         });
       });
   } else {
-    setTimeout(() => initializeBiddingServices(), 500);
+    setTimeout(() => initializeBiddingServices(), 200);
   }
 }

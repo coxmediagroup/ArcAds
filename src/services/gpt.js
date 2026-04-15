@@ -30,7 +30,6 @@ export function refreshSlot({
   info = {}
 }) {
   new Promise((resolve) => {
-    runRefreshEvent();
     if (prerender) {
       try {
         prerender(info).then(() => {
@@ -45,19 +44,17 @@ export function refreshSlot({
       resolve('No Prerender function was provided.');
     }
   }).then(() => {
-    console.log('refresh finishing up');
+    runRefreshEvent();
   });
 
   function runRefreshEvent() {
-    console.log('refresh check');
     if (window.blockArcAdsLoad) return 'blockArcAdsLoad';
     if (window.googletag && googletag.pubadsReady) {
       window.googletag.pubads().refresh([ad], { changeCorrelator: correlator });
     } else {
       setTimeout(() => {
         runRefreshEvent();
-        console.log('refresh rerun');
-      }, 500);
+      }, 200);
     }
   }
 }
