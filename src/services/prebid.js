@@ -24,7 +24,7 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
     return;
   }
 
-  const magniteAds = ['HP01', 'HP02', 'RP01', 'RP02', 'RP04', 'PG01', 'PG02', 'PG03', 'RPAA', 'VP01', 'VP02'];
+  const magniteAds = ['HP01', 'HP02', 'RP01', 'RP02', 'RP04', 'PG01', 'PG02', 'PG03', 'RPAA', 'VP01', 'VP02', 'WP01'];
 
   if (window.enableMagnite) {
     if (magniteAds.includes(codes[0])) {
