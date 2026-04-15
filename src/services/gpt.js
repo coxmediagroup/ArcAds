@@ -30,6 +30,7 @@ export function refreshSlot({
   info = {}
 }) {
   new Promise((resolve) => {
+    runRefreshEvent();
     if (prerender) {
       try {
         prerender(info).then(() => {
@@ -44,7 +45,7 @@ export function refreshSlot({
       resolve('No Prerender function was provided.');
     }
   }).then(() => {
-    runRefreshEvent();
+    console.log('refresh finishing up');
   });
 
   function runRefreshEvent() {
@@ -56,7 +57,7 @@ export function refreshSlot({
       setTimeout(() => {
         runRefreshEvent();
         console.log('refresh rerun');
-      }, 1000);
+      }, 500);
     }
   }
 }
