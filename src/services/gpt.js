@@ -49,12 +49,14 @@ export function refreshSlot({
   });
 
   function runRefreshEvent() {
+    console.log('refresh check');
     if (window.blockArcAdsLoad) return 'blockArcAdsLoad';
     if (window.googletag && googletag.pubadsReady) {
       window.googletag.pubads().refresh([ad], { changeCorrelator: correlator });
     } else {
       setTimeout(() => {
         runRefreshEvent();
+        console.log('refresh rerun');
       }, 1000);
     }
   }
