@@ -24,7 +24,10 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
     return;
   }
 
+  const magniteAds = ['HP01', 'HP02', 'RP01', 'RP02', 'RP04', 'PG01', 'PG02', 'PG03', 'RPAA', 'VP01', 'VP02'];
+
   if (window.enableMagnite) {
+    if (magniteAds.includes(codes[0])) {
     pbjs.rp.requestBids({
       gptSlotObjects: [ad],
       callback: (result) => {
@@ -32,6 +35,21 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
         refreshSlot({ ad, info, prerender });
       },
     });
+    } else {
+      pbjs.requestBids({
+        timeout,
+        adUnitCodes: codes,
+        bidsBackHandler: (result) => {
+          console.log('Bid Back Handler', result);
+          pbjs.setTargetingForGPTAsync(codes);
+          if (cb) {
+            cb();
+          } else {
+            refreshSlot({ ad, info, prerender });
+          }
+        },
+      });
+    }
   } else {
     pbjs.requestBids({
       timeout,
