@@ -14,8 +14,46 @@ function getArrayDepth(array) {
 /** @desc Displays an advertisement from Google DFP with optional support for Prebid.js and Amazon TAM/A9. **/
 export class ArcAds {
   constructor(options, handleSlotRendered = null) {
-    this.dfpId = options.dfp.id || '';
-    this.wrapper = options.bidding || {};
+    this.dfpId = options.dfp.id || '12523293';
+    this.wrapper = options.bidding || {
+      amazon: {
+        enabled: true,
+        id: '3185',
+        deals: true,
+      },
+      prebid: {
+        enabled: true,
+        timeout: 2000,
+        sizeConfig: [
+          {
+            mediaQuery: '(min-width: 1024px)',
+            sizesSupported: [
+              [300, 250],
+              [970, 90],
+              [728, 90],
+            ],
+            labels: ['desktop'],
+          },
+          {
+            mediaQuery: '(min-width: 480px) and (max-width: 1023px)',
+            sizesSupported: [
+              [728, 90],
+              [320, 50],
+              [300, 250],
+            ],
+            labels: ['tablet'],
+          },
+          {
+            mediaQuery: '(min-width: 0px) and (max-width: 479px)',
+            sizesSupported: [
+              [300, 250],
+              [320, 50],
+            ],
+            labels: ['phone'],
+          },
+        ],
+      },
+    };
     this.positions = [];
     this.collapseEmptyDivs = options.dfp.collapseEmptyDivs;
     this.adsList = [];
@@ -73,7 +111,7 @@ export class ArcAds {
       if ((isMobile.any() && display === 'mobile') || (!isMobile.any() && display === 'desktop') || (display === 'all')) {
         // Registers the advertisement with Prebid.js if enabled on both the unit and wrapper.
         if (prebidEnabled && (this.wrapper.prebid && this.wrapper.prebid.enabled) && flatDimensions) {
-          if (pbjs && iframeBidders.length > 0) {
+          if (pbjs && pbjs.setConfig && iframeBidders.length > 0) {
             pbjs.setConfig({
               userSync: {
                 iframeEnabled: true,

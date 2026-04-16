@@ -9,10 +9,20 @@ import { sendLog } from '../util/log';
 * @param {object} obj.prebid - An object containing configuration data for Prebid.js.
 * @param {object} obj.amazon - An object containing configuration data for Amazon A9 and TAM.
 **/
-export function initializeBiddingServices({
-  prebid = false,
-  amazon = false
-}) {
+export function initializeBiddingServices(info = {}) {
+  const { prebid = false, amazon = false } = info;
+
+  if (typeof window !== 'undefined') {
+    window.pbjs = window.pbjs || {};
+    const { pbjs } = window;
+
+    pbjs.bidderSettings = {
+      standard: {
+        storageAllowed: true,
+      },
+    };
+  }
+
   if (window.arcBiddingReady) {
     sendLog('initializeBiddingServices()', 'Header bidding has been previously initialized', null);
     return;
@@ -21,7 +31,7 @@ export function initializeBiddingServices({
   window.arcBiddingReady = false;
 
   const enablePrebid = new Promise((resolve) => {
-    if (!window.enableMagnite && prebid && prebid.enabled) {
+    if (prebid && prebid.enabled) {
       if (typeof pbjs === 'undefined') {
         const pbjs = pbjs || {};
         pbjs.que = pbjs.que || [];
@@ -48,7 +58,7 @@ export function initializeBiddingServices({
         });
       } else {
         console.warn(`ArcAds: Missing Amazon account id. 
-          Documentation: https://github.com/washingtonpost/arcads#amazon-tama9`);
+        Documentation: https://github.com/washingtonpost/arcads#amazon-tama9`);
         sendLog('initializeBiddingServices()', 'Amazon is not enabled on this wrapper.', null);
         resolve('Amazon is not enabled on the wrapper...');
       }
