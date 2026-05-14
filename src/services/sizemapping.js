@@ -44,13 +44,13 @@ export function prepareSizeMaps(dimensions, sizemap) {
 **/
 export function parseSizeMappings(sizeMappings) {
   try {
-    const width = window.innerWidth ||
-    document.documentElement.clientWidth ||
-    document.body.clientWidth;
+    const width = window.innerWidth
+    || document.documentElement.clientWidth
+    || document.body.clientWidth;
 
-    const height = window.innerHeight ||
-    document.documentElement.clientHeight ||
-    document.body.clientHeight;
+    const height = window.innerHeight
+    || document.documentElement.clientHeight
+    || document.body.clientHeight;
 
     const sd = [width, height];
 
@@ -169,4 +169,3 @@ export function setResizeListener(params) {
   // Adds the listener to an object with the id as the key so we can unbind it later.
   sizemapListeners[id] = { listener: resizeListeners[id], correlators };
 }
-
