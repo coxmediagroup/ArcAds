@@ -9,6 +9,10 @@ export const sizemapListeners = {};
 /** @desc An object containing all of the screen resize event listeners for size mapping. **/
 export const resizeListeners = {};
 
+/** @desc Global resize handler registry to consolidate multiple resize listeners into one. **/
+let globalResizeHandler = null;
+const resizeHandlerRegistry = {};
+
 /**
 * @desc Prepares a set of dimensions and their corresponding breakpoints to create a sizemap which is readable by GPT.
 * @param {array} dimensions - An array containing all of the applicable sizes the advertisement can use.
@@ -44,13 +48,13 @@ export function prepareSizeMaps(dimensions, sizemap) {
 **/
 export function parseSizeMappings(sizeMappings) {
   try {
-    const width = window.innerWidth ||
-    document.documentElement.clientWidth ||
-    document.body.clientWidth;
+    const width = window.innerWidth
+    || document.documentElement.clientWidth
+    || document.body.clientWidth;
 
-    const height = window.innerHeight ||
-    document.documentElement.clientHeight ||
-    document.body.clientHeight;
+    const height = window.innerHeight
+    || document.documentElement.clientHeight
+    || document.body.clientHeight;
 
     const sd = [width, height];
 
@@ -163,10 +167,38 @@ export function runResizeEvents(params) {
 export function setResizeListener(params) {
   const { id, correlators } = params;
 
-  resizeListeners[id] = debounce(runResizeEvents(params), 250);
-  window.addEventListener('resize', resizeListeners[id]);
+  // Store the handler function for this specific ad
+  const handler = runResizeEvents(params);
+  resizeListeners[id] = handler;
+  resizeHandlerRegistry[id] = handler;
+
+  // Initialize global resize handler if not already created
+  if (!globalResizeHandler) {
+    globalResizeHandler = debounce(() => {
+      // Execute all registered handlers
+      Object.values(resizeHandlerRegistry).forEach(fn => fn());
+    }, 250);
+    window.addEventListener('resize', globalResizeHandler);
+  }
 
   // Adds the listener to an object with the id as the key so we can unbind it later.
   sizemapListeners[id] = { listener: resizeListeners[id], correlators };
 }
 
+/**
+* @desc Removes the resize listener for a specific ad by id.
+* @param {string} id - The advertisement id.
+**/
+export function removeResizeListener(id) {
+  if (resizeHandlerRegistry[id]) {
+    delete resizeHandlerRegistry[id];
+    delete resizeListeners[id];
+    delete sizemapListeners[id];
+
+    // If no more handlers, remove the global listener
+    if (Object.keys(resizeHandlerRegistry).length === 0 && globalResizeHandler) {
+      window.removeEventListener('resize', globalResizeHandler);
+      globalResizeHandler = null;
+    }
+  }
+}
