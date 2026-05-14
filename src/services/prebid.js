@@ -30,8 +30,7 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
     if (magniteAds.includes(codes[0])) {
       pbjs.rp.requestBids({
         gptSlotObjects: [ad],
-        callback: (result) => {
-          console.log('Demand Manager Bid Back Handler', result);
+        callback: () => {
           refreshSlot({ ad, info, prerender });
         },
       });
@@ -39,8 +38,7 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
       pbjs.requestBids({
         timeout,
         adUnitCodes: codes,
-        bidsBackHandler: (result) => {
-          console.log('Bid Back Handler', result);
+        bidsBackHandler: () => {
           pbjs.setTargetingForGPTAsync(codes);
           if (cb) {
             cb();
@@ -54,8 +52,7 @@ export function fetchPrebidBidsArray(ad, codes, timeout, info, prerender, cb = n
     pbjs.requestBids({
       timeout,
       adUnitCodes: codes,
-      bidsBackHandler: (result) => {
-        console.log('Bid Back Handler', result);
+      bidsBackHandler: () => {
         pbjs.setTargetingForGPTAsync(codes);
         if (cb) {
           cb();

@@ -2,6 +2,11 @@
 import {MobileDetection} from '../util/mobile.js';
 
 describe('MobileDetection', () => {
+  beforeEach(() => {
+    // Clear cache before each test to ensure user agent changes are detected
+    MobileDetection.clearCache();
+  });
+
   afterAll(() => {
     window.__defineGetter__('navigator', function () {
       return {};

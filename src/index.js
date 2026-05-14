@@ -3,12 +3,37 @@ import { sendLog } from './util/log';
 import { fetchBids, initializeBiddingServices } from './services/headerbidding';
 import { initializeGPT, queueGoogletagCommand, refreshSlot, dfpSettings, setTargeting, determineSlotName } from './services/gpt';
 import { queuePrebidCommand, addUnit } from './services/prebid';
-import { prepareSizeMaps, setResizeListener } from './services/sizemapping';
+import { prepareSizeMaps, setResizeListener, removeResizeListener } from './services/sizemapping';
 
 function getArrayDepth(array) {
-  return Array.isArray(array)
-    ? 1 + Math.max(...array.map(child => getArrayDepth(child)))
-    : 0;
+  if (!Array.isArray(array)) return 0;
+  let maxDepth = 0;
+  for (let i = 0; i < array.length; i++) {
+    if (Array.isArray(array[i])) {
+      const depth = getArrayDepth(array[i]);
+      if (depth > maxDepth) maxDepth = depth;
+    }
+  }
+  return 1 + maxDepth;
+}
+
+function flattenDimensions(dimensions) {
+  if (!dimensions || !Array.isArray(dimensions)) return [];
+  const result = [];
+  const depth = getArrayDepth(dimensions);
+
+  if (depth === 1) {
+    result.push(...dimensions);
+  } else if (depth === 2) {
+    result.push(...dimensions);
+  } else {
+    dimensions.forEach((set) => {
+      if (Array.isArray(set)) {
+        result.push(...set);
+      }
+    });
+  }
+  return result;
 }
 
 /** @desc Displays an advertisement from Google DFP with optional support for Prebid.js and Amazon TAM/A9. **/
@@ -57,7 +82,11 @@ export class ArcAds {
     this.positions = [];
     this.collapseEmptyDivs = options.dfp.collapseEmptyDivs;
     this.adsList = [];
-    window.isMobile = MobileDetection;
+
+    // Set window.isMobile only once
+    if (!window.isMobile) {
+      window.isMobile = MobileDetection;
+    }
 
     if (this.dfpId === '') {
       console.warn(
@@ -79,19 +108,8 @@ export class ArcAds {
   **/
   registerAd(params) {
     const { id, slotName, dimensions, adType = false, targeting = {}, display = 'all', bidding = false, iframeBidders = ['openx'], others = {} } = params;
-    const flatDimensions = [];
+    const flatDimensions = flattenDimensions(dimensions);
     let processDisplayAd = false;
-    const dimensionsDepth = getArrayDepth(dimensions);
-
-    if (dimensions && typeof dimensions !== 'undefined' && dimensionsDepth === 1) {
-      flatDimensions.push(...dimensions);
-    } else if (dimensions && typeof dimensions !== 'undefined' && dimensions.length > 0 && dimensionsDepth === 2) {
-      flatDimensions.push(...dimensions);
-    } else if (dimensions) {
-      dimensions.forEach((set) => {
-        flatDimensions.push(...set);
-      });
-    }
 
     try {
       /* If positional targeting doesn't exist it gets assigned a numeric value
@@ -171,8 +189,7 @@ export class ArcAds {
     pbjs.requestBids({
       timeout: bidderTimeout,
       //adUnitCodes: codes,
-      bidsBackHandler: (result) => {
-        console.log('Bid Back Handler', result);
+      bidsBackHandler: () => {
         pbjs.setTargetingForGPTAsync();
 
         window.googletag.pubads().refresh(window.adsList);
@@ -339,6 +356,23 @@ export class ArcAds {
    */
   setPageLeveTargeting(key, value) { //TODO check for pubads
     googletag.pubads().setTargeting(key, value);
+  }
+
+  /**
+   * Cleanup method to remove all resize listeners and prevent memory leaks.
+   * Call this when destroying an ArcAds instance or when ads are no longer needed.
+   *
+   * @param {string} id - Optional specific ad id to cleanup. If not provided, cleans up all ads.
+   */
+  cleanup(id = null) {
+    if (id) {
+      removeResizeListener(id);
+    } else {
+      // Clean up all resize listeners
+      Object.keys(this.adsList).forEach((adId) => {
+        removeResizeListener(adId);
+      });
+    }
   }
 
   static getWindow() {

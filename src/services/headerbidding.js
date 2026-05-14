@@ -30,21 +30,24 @@ export function initializeBiddingServices(info = {}) {
 
   window.arcBiddingReady = false;
 
-  const enablePrebid = new Promise((resolve) => {
-    if (prebid && prebid.enabled) {
+  const promises = [];
+
+  // Only create promises for enabled services
+  if (prebid && prebid.enabled) {
+    const enablePrebid = new Promise((resolve) => {
       if (typeof pbjs === 'undefined') {
         const pbjs = pbjs || {};
         pbjs.que = pbjs.que || [];
       }
       resolve('Prebid has been initialized');
-    } else {
-      sendLog('initializeBiddingServices()', 'Arc Prebid is not enabled on this wrapper.', null);
-      resolve('Prebid is not enabled on the wrapper...');
-    }
-  });
+    });
+    promises.push(enablePrebid);
+  } else {
+    sendLog('initializeBiddingServices()', 'Arc Prebid is not enabled on this wrapper.', null);
+  }
 
-  const enableAmazon = new Promise((resolve) => {
-    if (amazon && amazon.enabled && window.apstag) {
+  if (amazon && amazon.enabled && window.apstag) {
+    const enableAmazon = new Promise((resolve) => {
       if (amazon.id && amazon.id !== '') {
         queueAmazonCommand(() => {
           // Initializes the Amazon APS tag script.
@@ -57,21 +60,23 @@ export function initializeBiddingServices(info = {}) {
           resolve('Amazon scripts have been added onto the page!');
         });
       } else {
-        console.warn(`ArcAds: Missing Amazon account id. 
+        console.warn(`ArcAds: Missing Amazon account id.
         Documentation: https://github.com/washingtonpost/arcads#amazon-tama9`);
         sendLog('initializeBiddingServices()', 'Amazon is not enabled on this wrapper.', null);
         resolve('Amazon is not enabled on the wrapper...');
       }
-    } else {
-      resolve('Amazon is not enabled on the wrapper...');
-    }
-  });
+    });
+    promises.push(enableAmazon);
+  }
 
   // Waits for all header bidding services to be initialized before telling the service it's ready to retrieve bids.
-  Promise.all([enablePrebid, enableAmazon])
-    .then(() => {
+  if (promises.length > 0) {
+    Promise.all(promises).then(() => {
       window.arcBiddingReady = true;
     });
+  } else {
+    window.arcBiddingReady = true;
+  }
 }
 
 /**
@@ -105,30 +110,31 @@ export function fetchBids({
     bids: bidding,
   };
 
-  const prebidBids = new Promise((resolve) => {
-    if (wrapper.prebid && wrapper.prebid.enabled) {
-      const timeout = wrapper.prebid.timeout || 700;
-      queuePrebidCommand.bind(this, fetchPrebidBids(ad, wrapper.prebid.useSlotForAdUnit ? slotName : id, timeout, adInfo, prerender, () => {
-        resolve('Fetched Prebid ads!');
-      }));
-    } else {
-      resolve('Prebid is not enabled on the wrapper...');
-    }
-  });
-
-  const amazonBids = new Promise((resolve) => {
-    if (wrapper.amazon && wrapper.amazon.enabled) {
-      fetchAmazonBids(id, slotName, dimensions, breakpoints, () => {
-        resolve('Fetched Amazon ads!');
-      });
-    } else {
-      resolve('Amazon is not enabled on the wrapper...');
-    }
-  });
-
   if (window.arcBiddingReady) {
-    Promise.all([prebidBids, amazonBids])
-      .then(() => {
+    const promises = [];
+
+    // Only create promises for enabled bidding services
+    if (wrapper.prebid && wrapper.prebid.enabled) {
+      const prebidBids = new Promise((resolve) => {
+        const timeout = wrapper.prebid.timeout || 700;
+        queuePrebidCommand.bind(this, fetchPrebidBids(ad, wrapper.prebid.useSlotForAdUnit ? slotName : id, timeout, adInfo, prerender, () => {
+          resolve('Fetched Prebid ads!');
+        }));
+      });
+      promises.push(prebidBids);
+    }
+
+    if (wrapper.amazon && wrapper.amazon.enabled) {
+      const amazonBids = new Promise((resolve) => {
+        fetchAmazonBids(id, slotName, dimensions, breakpoints, () => {
+          resolve('Fetched Amazon ads!');
+        });
+      });
+      promises.push(amazonBids);
+    }
+
+    if (promises.length > 0) {
+      Promise.all(promises).then(() => {
         refreshSlot({
           ad,
           correlator,
@@ -136,6 +142,15 @@ export function fetchBids({
           info: adInfo
         });
       });
+    } else {
+      // No bidding enabled, refresh immediately
+      refreshSlot({
+        ad,
+        correlator,
+        prerender,
+        info: adInfo
+      });
+    }
   } else {
     setTimeout(() => initializeBiddingServices(), 200);
   }
