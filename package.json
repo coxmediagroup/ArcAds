@@ -54,9 +54,5 @@
     "webpack": "^3.10.0",
     "webpack-dev-server": "^2.11.5"
   },
-  "dependencies": {
-    "anylogger": "^1.0.10",
-    "anylogger-console": "^1.0.0"
-  },
   "homepage": "https://github.com/washingtonpost/arcads#readme"
 }
