@@ -1,5 +1,3 @@
-import anylogger from 'anylogger';
-import 'anylogger-console';
 import { renamePositionKey } from '../util/customTargeting';
 import {debounce} from '../util/debounce.js';
 import {sendLog} from '../util/log.js';

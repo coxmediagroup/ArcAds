@@ -104,9 +104,9 @@ export class ArcAds {
         Object.assign(params, { targeting: positionParam });
       }
 
-      const prebidEnabled = !window.enableMagnite && bidding.prebid &&
-        ((bidding.prebid.enabled && bidding.prebid.bids) ||
-        (typeof bidding.prebid.enabled === 'undefined' && bidding.prebid.bids));
+      const prebidEnabled = !window.enableMagnite && bidding.prebid
+        && ((bidding.prebid.enabled && bidding.prebid.bids)
+        || (typeof bidding.prebid.enabled === 'undefined' && bidding.prebid.bids));
 
       if ((isMobile.any() && display === 'mobile') || (!isMobile.any() && display === 'desktop') || (display === 'all')) {
         // Registers the advertisement with Prebid.js if enabled on both the unit and wrapper.

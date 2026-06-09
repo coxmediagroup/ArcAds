@@ -5,7 +5,23 @@ const generatePlugins = function (env) {
   const plugins = [];
   if (env.production) {
     plugins.push(new UglifyJsPlugin({
-      sourceMap: true,
+      sourceMap: false,
+      uglifyOptions: {
+        compress: {
+          warnings: false,
+          drop_console: false, // Keep console for debug logging
+          drop_debugger: true,
+          pure_funcs: ['console.info', 'console.debug', 'console.warn'], // Remove these console methods
+          passes: 2,
+        },
+        output: {
+          comments: false,
+          beautify: false,
+        },
+        mangle: {
+          safari10: true,
+        },
+      },
     }));
   }
   return plugins;
@@ -35,7 +51,15 @@ module.exports = env => ({
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['env'],
+            presets: [
+              ['env', {
+                targets: {
+                  browsers: ['last 2 versions', 'ie >= 11']
+                },
+                modules: false, // Enable tree-shaking
+                loose: true, // Smaller output
+              }]
+            ],
             plugins: ['transform-decorators-legacy', 'transform-object-rest-spread'],
           },
         },
