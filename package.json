@@ -1,6 +1,6 @@
 {
   "name": "arcads",
-  "version": "4.0.1",
+  "version": "4.5.0",
   "description": "ArcAds is a GPT wrapper created by Arc Publishing with publishers in mind.",
   "main": "dist/arcads.js",
   "scripts": {
